@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Splunk Config Builder</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Tilt+Warp&display=swap" rel="stylesheet">
+	<style>
+/* Define a two-column grid layout */
+#top-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 10px;
+}
+
+#switches {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Add styles to form groups */
+.form-group {
+    margin-bottom: 0;
+}
+
+/* Set input width to 100% */
+.form-control {
+    width: 100%;
+}
+
+/* Style label elements */
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: yellow;
+}
+
+.nav-tabs {
+	border-bottom: none;
+}
+
+.nav-link {
+  border-radius: 30px 30px 0 0;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  overflow: hidden;
+  background-color: #0275d8;
+}
+
+li a {
+	color: white;
+}
+
+#nav {
+	margin-bottom: 20px;
+}
+
+.nav-item {
+	margin-right: 15px;
+}
+
+.tooltip-inner {
+    max-width: 500px;
+  }
+
+    </style>
+</head>
+<body style="background-color:#11131c;">
+    <div class="container mt-5">
+        <h1 class="text-center" style="color:white;font-family:'Tilt Warp',cursive;">Splunk Config Builder</h1>
+		<nav id="nav">
+			<ul class="nav nav-tabs">
+				<li class="nav-item">
+					<a class="nav-link active" href="/">Inputs</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="/props">Props</a>
+				</li>
+			</ul>
+		</nav>
+        <form method="post" id="form_id">
+		<div id="top-group">
+            <div class="form-group">
+                <label for="type">Type</label>
+                <select class="form-control" id="type" name="type" style="background-color:#bebfc2;">
+                    <option value="File monitor" selected>File Monitor</option>
+                    <option value="HEC">HTTP Event Collector (HEC)</option>
+                    <option value="Syslog">Syslog</option>
+                </select>
+            </div>
+            <div class="form-group" id="path-group">
+                <label for="path">Path</label>
+                <input type="text" class="form-control" id="path" name="path" placeholder="Enter file path" value="{{ path_input }}" style="background-color:#bebfc2;">
+            </div>
+			<div class="form-group" id="index-group">
+                <label for="index">Index</label>
+                <input type="text" class="form-control" id="index" name="index" placeholder="Splunk index name" value="{{ index_input }}" style="background-color:#bebfc2;">
+            </div>
+			<div class="form-group" id="sourcetype-group">
+                <label for="sourcetype">Sourcetype</label>
+                <input type="text" class="form-control" id="sourcetype" name="sourcetype" placeholder="Data sourcetype name" value="{{ sourcetype_input }}" style="background-color:#bebfc2;">
+            </div>
+			
+			<div id="switches">
+				<div class="form-check form-check-inline">
+					{% if 'host-segment' in request.form %}
+                    <input class="form-check-input" type="checkbox" id="host-segment" name="host-segment" checked>
+					{% else %}
+					<input class="form-check-input" type="checkbox" id="host-segment" name="host-segment">
+					{% endif %}
+					
+					<label class="form-check-label" for="host-segment" data-html="true" data-container="body" data-toggle="tooltip" title="{{ host_segment_tt }}">host_segment</label>
+				</div>
+				
+				<div class="form-check form-check-inline">
+					{% if 'whitelist' in request.form %}
+					<input class="form-check-input" type="checkbox" id="whitelist" name="whitelist" checked>
+					{% else %}
+					<input class="form-check-input" type="checkbox" id="whitelist" name="whitelist">
+					{% endif %}
+					
+					<label class="form-check-label" for="whitelist" data-html="true" data-container="body" data-toggle="tooltip" title="{{ whitelist_tt }}">whitelist</label>
+				</div>
+				
+				<div class="form-check form-check-inline">
+					{% if 'blacklist' in request.form %}
+					<input class="form-check-input" type="checkbox" id="blacklist" name="blacklist" checked>
+					{% else %}
+					<input class="form-check-input" type="checkbox" id="blacklist" name="blacklist">
+					{% endif %}
+					
+					<label class="form-check-label" for="blacklist" data-html="true" data-container="body" data-toggle="tooltip" title="{{ blacklist_tt }}">blacklist</label>
+				</div>
+				
+				<div class="form-check form-check-inline">
+					{% if 'host-regex' in request.form %}
+					<input class="form-check-input" type="checkbox" id="host-regex" name="host-regex" checked>
+					{% else %}
+					<input class="form-check-input" type="checkbox" id="host-regex" name="host-regex">
+					{% endif %}
+					<label class="form-check-label" for="host-regex" data-html="true" data-container="body" data-toggle="tooltip" title="{{ host_regex_tt }}">host_regex</label>
+				</div>
+				
+				<div class="form-check form-check-inline">
+					{% if 'crcsalt' in request.form %}
+					<input class="form-check-input" type="checkbox" id="crcsalt" name="crcsalt" checked>
+					{% else %}
+					<input class="form-check-input" type="checkbox" id="crcsalt" name="crcsalt">
+					{% endif %}
+					<label class="form-check-label" for="crcsalt" data-html="true" data-container="body" data-toggle="tooltip" title="{{ crcsalt_tt }}">crcSalt</label>
+				</div>
+				
+				<div class="form-check form-check-inline">
+					{% if 'ignoreolderthan' in request.form %}
+					<input class="form-check-input" type="checkbox" id="ignoreolderthan" name="ignoreolderthan" checked>
+					{% else %}
+					<input class="form-check-input" type="checkbox" id="ignoreolderthan" name="ignoreolderthan">
+					{% endif %}
+					<label class="form-check-label" for="ignoreolderthan" data-html="true" data-container="body" data-toggle="tooltip" title="{{ ignoreolderthan_tt }}">ignoreOlderThan</label>
+				</div>
+				
+			</div>
+            <div class="form-group" id="os-group">
+                <label for="os">OS</label>
+                <select class="form-control" id="os" name="os" style="background-color:#bebfc2;">
+					{% if os_type == 'Linux' %}
+                    <option value="Linux" selected>Linux</option>
+					{% else %}
+					<option value="Linux">Linux</option>
+					{% endif %}
+					
+					{% if os_type == 'Windows' %}
+                    <option value="Windows" selected>Windows</option>
+					{% else %}
+					<option value="Windows">Windows</option>
+					{% endif %}
+                </select>
+            </div>
+		</div>
+			<div class="form-group" id="props-group">
+                <label for="props" style="margin-bottom:-25px;margin-top:10px;">inputs.conf</label>
+				<button type="text" class="btn btn-dark btn-sm float-right" onClick="copyValues()" style="margin-bottom:5px;padding:4px;">Copy</button>
+                <textarea type="text" class="form-control" id="props" name="props" rows="10" cols="30" style="background-color:#bebfc2;">{{ props_conf_input }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-right:10px;">Generate</button>
+			<button type="submit" class="btn btn-primary" onClick="clearFields()" style="margin-bottom:10px;margin-top:10px" name="reset-button">Reset</button>
+        </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+	
+	function clearFields(){
+		document.getElementById("os").setAttribute('value', 'Linux');
+		document.getElementById("props").setAttribute('value', '');
+		document.getElementById("path").setAttribute('value', '');
+		document.getElementById("host-segment").removeAttribute('checked', '');
+		document.getElementById("whitelist").removeAttribute('checked', '');
+		document.getElementById("blacklist").removeAttribute('checked', '');
+		document.getElementById("host-regex").removeAttribute('checked', '');
+		document.getElementById("crcsalt").removeAttribute('checked', '');
+		document.getElementById("ignoreolderthan").removeAttribute('checked', '');
+    }
+	
+	function copyValues(){
+		let textarea = document.getElementById("props");
+		textarea.select();
+		document.execCommand("copy");
+    }
+	
+    $(document).ready(function() {
+	$('[data-toggle="tooltip"]').tooltip()
+    // Show/hide "Path" and "OS" fields based on "Type" selection
+    $("#type").change(function() {
+        if ($(this).val() === "File monitor") {
+            $("#path-group").show();
+            $("#os-group").show();
+			$("#props-group").show();
+        } else {
+            $("#path-group").hide();
+            $("#os-group").hide();
+			$("#switches").hide();
+        }
+    });
+
+    // Show "OS" field on page load if "Type" is "File monitor"
+    if ($("#type").val() === "File monitor") {
+        $("#os-group").show();
+    }
+	
+	
+		
+});
+    </script>
+</body>
+</html>
